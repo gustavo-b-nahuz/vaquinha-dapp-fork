@@ -27,14 +27,13 @@ function ConnectWallet({ setAccount, setIsConnected, setSigner, setProvider }) {
     }
   }, [setAccount, setIsConnected, setSigner, setProvider]);
 
-  // Usar useEffect para monitorar mudanças na conta e rede
   useEffect(() => {
     if (window.ethereum) {
       // Verificar a conexão inicial
       checkConnection();
 
-      // Monitorar mudanças na conta
-      window.ethereum.on("accountsChanged", (accounts) => {
+      // Funções para manipulação de mudanças
+      const handleAccountsChanged = (accounts) => {
         if (accounts.length > 0) {
           const newAccount = accounts[0];
           setAccount(newAccount);
@@ -46,21 +45,24 @@ function ConnectWallet({ setAccount, setIsConnected, setSigner, setProvider }) {
           setIsConnected(false);
           setAccount("");
         }
-      });
+      };
 
-      // Monitorar mudanças na rede (caso o usuário mude de rede)
-      window.ethereum.on("chainChanged", () => {
+      const handleChainChanged = () => {
         window.location.reload();
-      });
-    }
+      };
 
-    return () => {
-      // Limpar os listeners quando o componente for desmontado
-      if (window.ethereum) {
-        window.ethereum.removeListener("accountsChanged");
-        window.ethereum.removeListener("chainChanged");
-      }
-    };
+      // Adicionar listeners
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      window.ethereum.on("chainChanged", handleChainChanged);
+
+      return () => {
+        // Limpar os listeners ao desmontar o componente
+        if (window.ethereum) {
+          window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+          window.ethereum.removeListener("chainChanged", handleChainChanged);
+        }
+      };
+    }
   }, [checkConnection, setAccount, setIsConnected, setSigner, setProvider]);
 
   const connectToMetaMask = async () => {

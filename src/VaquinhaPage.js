@@ -6,38 +6,39 @@ import "./App.css";
 
 const vaquinhaABI = VaquinhaArtifact.abi;
 
-export function VaquinhaPage({ provider }) {
+export function VaquinhaPage() {
   const { address } = useParams();
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [meta, setMeta] = useState("0");
   const [saldo, setSaldo] = useState("0");
   const [valorDoacao, setValorDoacao] = useState("0");
-  const [signer, setSigner] = useState(null);
+  const [vaquinhaContract, setVaquinhaContract] = useState(null);
 
   useEffect(() => {
-    if (provider) {
+    if (!address) return;
       const loadVaquinha = async () => {
-        console.log("Endereço da Vaquinha:", address);
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const vaquinhaContract = new ethers.Contract(address, vaquinhaABI, signer);
-        const titulo = await vaquinhaContract.titulo();
-        const descricao = await vaquinhaContract.descricao();
-        const meta = await vaquinhaContract.meta();
+        const contract = new ethers.Contract(address, vaquinhaABI, signer);
+        setVaquinhaContract(contract)
+
+        const titulo = await contract.titulo();
+        const descricao = await contract.descricao();
+        const meta = await contract.meta();
         const saldo = await provider.getBalance(address);
         setTitulo(titulo);
         setDescricao(descricao);
         setMeta(meta);
         setSaldo(saldo);
-        setSigner(signer);
       };
       loadVaquinha();
-    }
-  }, [address, provider]);
+
+  }, [address]);
 
   const doar = async () => {
     if (!valorDoacao) return alert("Digite um valor válido!");
-    const vaquinhaContract = new ethers.Contract(address, vaquinhaABI, signer);
+
     try {
       const tx = await vaquinhaContract.doar({ value: ethers.utils.parseEther(valorDoacao) });
       await tx.wait();
