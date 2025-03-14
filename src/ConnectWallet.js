@@ -4,14 +4,14 @@ import { ethers } from "ethers";
 function ConnectWallet({ setAccount, setIsConnected, setSigner, setProvider }) {
   const [loading, setLoading] = useState(false);
 
-  // Memorizar a função de verificação de conexão
+  // Função para verificar a conexão
   const checkConnection = useCallback(async () => {
     try {
       const accounts = await window.ethereum.request({
         method: "eth_accounts",
       });
 
-      if (accounts.length > 0) {     
+      if (accounts.length > 0) {
         // Configurar provider e signer
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -19,23 +19,50 @@ function ConnectWallet({ setAccount, setIsConnected, setSigner, setProvider }) {
 
         setAccount(address);
         setIsConnected(true);
-
         setSigner(signer);
         setProvider(provider);
       }
     } catch (error) {
       console.error("Erro ao verificar a conexão:", error);
     }
-  }, [setAccount, setIsConnected, setSigner, setProvider]);  // Dependências
+  }, [setAccount, setIsConnected, setSigner, setProvider]);
 
-  // Verificar se o MetaMask está conectado no início
+  // Usar useEffect para monitorar mudanças na conta e rede
   useEffect(() => {
     if (window.ethereum) {
+      // Verificar a conexão inicial
       checkConnection();
-    }
-  }, [checkConnection]);  // Usando a função memorized como dependência
 
-  // Função para conectar ao MetaMask
+      // Monitorar mudanças na conta
+      window.ethereum.on("accountsChanged", (accounts) => {
+        if (accounts.length > 0) {
+          const newAccount = accounts[0];
+          setAccount(newAccount);
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          setSigner(signer);
+          setProvider(provider);
+        } else {
+          setIsConnected(false);
+          setAccount("");
+        }
+      });
+
+      // Monitorar mudanças na rede (caso o usuário mude de rede)
+      window.ethereum.on("chainChanged", () => {
+        window.location.reload();
+      });
+    }
+
+    return () => {
+      // Limpar os listeners quando o componente for desmontado
+      if (window.ethereum) {
+        window.ethereum.removeListener("accountsChanged");
+        window.ethereum.removeListener("chainChanged");
+      }
+    };
+  }, [checkConnection, setAccount, setIsConnected, setSigner, setProvider]);
+
   const connectToMetaMask = async () => {
     setLoading(true);
 
@@ -49,7 +76,6 @@ function ConnectWallet({ setAccount, setIsConnected, setSigner, setProvider }) {
 
         setAccount(address);
         setIsConnected(true);
-
         setSigner(signer);
         setProvider(provider);
 
