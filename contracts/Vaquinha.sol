@@ -7,16 +7,18 @@ contract Vaquinha {
     string public descricao;
     uint public meta;
     uint public totalArrecadado;
+    string public unidade;
 
     mapping(address => uint) public doadores;
 
     event DoacaoRecebida(address doador, uint valor);
     event Retirada(address organizador, uint valor);
 
-    constructor(string memory _titulo, string memory _descricao, uint _meta, address _organizador) {
+    constructor(string memory _titulo, string memory _descricao, uint _meta, string memory _unidade, address _organizador) {
         titulo = _titulo;
         descricao = _descricao;
         meta = _meta;
+        unidade = _unidade;
         organizador = _organizador;
     }
 

@@ -1,0 +1,100 @@
+/* Estilos gerais da página */
+.vaquinha-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.wallet-info {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Seção de criação de vaquinha */
+.form-section {
+    background: #ecf0f1;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-section input,
+.form-section textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+}
+
+.create-btn {
+    background: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.create-btn:hover {
+    background: #2980b9;
+}
+
+/* Grid das vaquinhas */
+.vaquinha-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.vaquinha-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.vaquinha-card:hover {
+    transform: scale(1.05);
+}
+
+.vaquinha-card h3 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.vaquinha-card p {
+    color: #7f8c8d;
+}
+
+/* Mensagem quando não há vaquinhas */
+.no-vaquinhas {
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.meta-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* espaço entre o input e o select */
+    margin: 10px 0; /* ajusta a margem vertical se quiser */
+}
+
+.meta-input-container input {
+    flex: 1; /* para que o input ocupe o espaço restante */
+}

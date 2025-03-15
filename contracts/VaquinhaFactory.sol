@@ -8,8 +8,8 @@ contract VaquinhaFactory {
 
     event NovaVaquinha(address vaquinha, string titulo, address organizador);
 
-    function criarVaquinha(string memory _titulo, string memory _descricao, uint _meta) public {
-        Vaquinha novaVaquinha = new Vaquinha(_titulo, _descricao, _meta, msg.sender);
+    function criarVaquinha(string memory _titulo, string memory _descricao, uint _meta, string memory _unidade) public {
+        Vaquinha novaVaquinha = new Vaquinha(_titulo, _descricao, _meta, _unidade, msg.sender);
         vaquinhas.push(address(novaVaquinha));
 
         emit NovaVaquinha(address(novaVaquinha), _titulo, msg.sender);

@@ -1,132 +1,166 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
-import "./App.css";
 import ConnectWallet from "./ConnectWallet";
 import VaquinhaFactoryArtifact from "./artifacts/contracts/VaquinhaFactory.sol/VaquinhaFactory.json";
 import VaquinhaArtifact from "./artifacts/contracts/Vaquinha.sol/Vaquinha.json";
+import "./VaquinhaHome.css";
 
 const factoryABI = VaquinhaFactoryArtifact.abi;
 const factoryAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const vaquinhaABI = VaquinhaArtifact.abi;
 
 export function VaquinhaHome() {
-  const [titulo, setTitulo] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [meta, setMeta] = useState("");
-  const [vaquinhas, setVaquinhas] = useState([]);
-  const [account, setAccount] = useState("");
-  const [isConnected, setIsConnected] = useState(false);
-  const [signer, setSigner] = useState(null);
-  const [provider, setProvider] = useState(null);
-  const navigate = useNavigate();
+    const [titulo, setTitulo] = useState("");
+    const [descricao, setDescricao] = useState("");
+    const [meta, setMeta] = useState("");
+    const [metaUnit, setMetaUnit] = useState("ether"); // NOVO estado para a unidade
+    const [vaquinhas, setVaquinhas] = useState([]);
+    const [account, setAccount] = useState("");
+    const [isConnected, setIsConnected] = useState(false);
+    const [signer, setSigner] = useState(null);
+    const [provider, setProvider] = useState(null);
+    const navigate = useNavigate();
 
-  // Criar Vaquinha
-  const criarVaquinha = async () => {
-    if (!isConnected) {
-      alert("Por favor, conecte a wallet primeiro!");
-      return;
-    }
+    // Criar Vaquinha
+    const criarVaquinha = async () => {
+        if (!isConnected) {
+            alert("Por favor, conecte a wallet primeiro!");
+            return;
+        }
 
-    const contract = new ethers.Contract(factoryAddress, factoryABI, signer);
+        const contract = new ethers.Contract(factoryAddress, factoryABI, signer);
 
-    try {
-      const tx = await contract.criarVaquinha(titulo, descricao, ethers.utils.parseEther(meta));
-      await tx.wait();
-      alert("Vaquinha criada com sucesso!");
-      listarVaquinhas();
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao criar vaquinha.");
-    }
-  };
+        try {
+            // Converter a meta para wei conforme a unidade escolhida
+            let metaEmWei;
+            if (metaUnit === "ether") {
+                metaEmWei = ethers.utils.parseEther(meta);
+            } else if (metaUnit === "gwei") {
+                metaEmWei = ethers.utils.parseUnits(meta, "gwei");
+            } else {
+                // "wei"
+                metaEmWei = ethers.utils.parseUnits(meta, "wei");
+            }
 
-  // Listar Vaquinhas com useCallback
-  const listarVaquinhas = useCallback(async () => {
-    if (!provider) return;
+            const tx = await contract.criarVaquinha(titulo, descricao, metaEmWei, metaUnit);
+            await tx.wait();
+            alert("Vaquinha criada com sucesso!");
+            listarVaquinhas();
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao criar vaquinha.");
+        }
+    };
 
-    const contract = new ethers.Contract(factoryAddress, factoryABI, provider);
+    // Listar Vaquinhas com useCallback
+    const listarVaquinhas = useCallback(async () => {
+        if (!provider) return;
 
-    try {
-      const vaquinhasList = await contract.listarVaquinhas();
-      const vaquinhasInfo = await Promise.all(
-        vaquinhasList.map(async (vaquinhaAddress) => {
-          const vaquinhaContract = new ethers.Contract(vaquinhaAddress, vaquinhaABI, provider);
-          const titulo = await vaquinhaContract.titulo();
-          const descricao = await vaquinhaContract.descricao();
-          const meta = await vaquinhaContract.meta();
-          return { vaquinhaAddress, titulo, descricao, meta };
-        })
-      );
-      setVaquinhas(vaquinhasInfo);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [provider]);
+        const contract = new ethers.Contract(factoryAddress, factoryABI, provider);
 
-  useEffect(() => {
-    if (isConnected && signer) {
-      listarVaquinhas();
-    }
-  }, [isConnected, signer, listarVaquinhas]);
+        try {
+            const vaquinhasList = await contract.listarVaquinhas();
+            const vaquinhasInfo = await Promise.all(
+                vaquinhasList.map(async (vaquinhaAddress) => {
+                    const vaquinhaContract = new ethers.Contract(vaquinhaAddress, vaquinhaABI, provider);
+                    const titulo = await vaquinhaContract.titulo();
+                    const descricao = await vaquinhaContract.descricao();
+                    const meta = await vaquinhaContract.meta();
+                    const unidade = await vaquinhaContract.unidade();
+                    return { vaquinhaAddress, titulo, descricao, meta, unidade };
+                })
+            );
+            setVaquinhas(vaquinhasInfo);
+        } catch (error) {
+            console.error(error);
+        }
+    }, [provider]);
 
-  const handleCardClick = (vaquinhaAddress) => {
-    navigate(`/vaquinha/${vaquinhaAddress}`);
-  };
+    useEffect(() => {
+        if (isConnected && signer) {
+            listarVaquinhas();
+        }
+    }, [isConnected, signer, listarVaquinhas]);
 
-  return (
-    <div className="App">
-      <h1>Vaquinha Dapp</h1>
+    const handleCardClick = (vaquinhaAddress) => {
+        navigate(`/vaquinha/${vaquinhaAddress}`);
+    };
 
-      {/* Componente para conectar com MetaMask */}
-      {!isConnected ? (
-        <ConnectWallet
-          setAccount={setAccount}
-          setIsConnected={setIsConnected}
-          setSigner={setSigner}
-          setProvider={setProvider}
-        />
-      ) : (
-        <div>
-          <p>Conta conectada: {account}</p>
+    return (
+        <div className="vaquinha-container">
+            <h1>Vaquinha DApp</h1>
+
+            {!isConnected ? (
+                <ConnectWallet
+                    setAccount={setAccount}
+                    setIsConnected={setIsConnected}
+                    setSigner={setSigner}
+                    setProvider={setProvider}
+                />
+            ) : (
+                <p className="wallet-info">Conta conectada: {account}</p>
+            )}
+
+            <div className="form-section">
+                <h2>Criar Nova Vaquinha</h2>
+                <input
+                    type="text"
+                    placeholder="Título"
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                />
+                <textarea
+                    placeholder="Descrição"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
+                />
+
+                {/* Container flex para input da meta e select */}
+                <div className="meta-input-container">
+                    <input
+                        type="number"
+                        placeholder="Meta"
+                        value={meta}
+                        onChange={(e) => setMeta(e.target.value)}
+                    />
+
+                    <select
+                        value={metaUnit}
+                        onChange={(e) => setMetaUnit(e.target.value)}
+                    >
+                        <option value="ether">ETH</option>
+                        <option value="gwei">GWEI</option>
+                        <option value="wei">WEI</option>
+                    </select>
+                </div>
+
+                <button className="create-btn" onClick={criarVaquinha}>
+                    Criar
+                </button>
+            </div>
+
+            <h2>Vaquinhas Criadas</h2>
+            {vaquinhas.length === 0 ? (
+                <p className="no-vaquinhas">Nenhuma vaquinha criada ainda</p>
+            ) : (
+                <div className="vaquinha-grid">
+                    {vaquinhas.map((vaquinha, index) => (
+                        <div
+                            key={index}
+                            className="vaquinha-card"
+                            onClick={() => handleCardClick(vaquinha.vaquinhaAddress)}
+                        >
+                            <h3>{vaquinha.titulo}</h3>
+                            <p>{vaquinha.descricao}</p>
+                            <p>
+                                <strong>Meta:</strong>{" "}
+                                {ethers.utils.formatUnits(vaquinha.meta, vaquinha.unidade)} {vaquinha.unidade}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-      )}
-
-      <h2>Criar Nova Vaquinha</h2>
-      <input
-        type="text"
-        placeholder="Título"
-        value={titulo}
-        onChange={(e) => setTitulo(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Descrição"
-        value={descricao}
-        onChange={(e) => setDescricao(e.target.value)}
-      />
-      <input
-        type="number"
-        placeholder="Meta (em ETH)"
-        value={meta}
-        onChange={(e) => setMeta(e.target.value)}
-      />
-      <button onClick={criarVaquinha}>Criar Vaquinha</button>
-
-      <h2>Vaquinhas Criadas</h2>
-      {vaquinhas.length === 0 ? (
-        <p>Nenhuma vaquinha criada ainda</p>
-      ) : (
-        <ul>
-          {vaquinhas.map((vaquinha, index) => (
-            <li key={index} className="vaquinha-card" onClick={() => handleCardClick(vaquinha.vaquinhaAddress)}>
-              <h3>{vaquinha.titulo}</h3>
-              <p>{vaquinha.descricao}</p>
-              <p>Meta: {ethers.utils.formatEther(vaquinha.meta)} ETH</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+    );
 }

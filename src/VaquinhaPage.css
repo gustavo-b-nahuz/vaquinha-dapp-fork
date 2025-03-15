@@ -1,0 +1,120 @@
+/* Estilos gerais da página da vaquinha */
+.vaquinha-page-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* Seção de detalhes da vaquinha */
+.vaquinha-details {
+    background: #ecf0f1;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.vaquinha-details h2 {
+    color: #2c3e50;
+}
+
+.descricao {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.meta-container p {
+    margin: 5px 0;
+}
+
+/* Barra de progresso */
+.progress-bar {
+    width: 100%;
+    background: #bdc3c7;
+    border-radius: 5px;
+    height: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress {
+    height: 100%;
+    background: #27ae60;
+    transition: width 0.5s ease-in-out;
+}
+
+/* Seção de doação */
+.doacao-section {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.doacao-section input {
+    width: 80%;
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.doar-btn {
+    background: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.doar-btn:hover {
+    background: #2980b9;
+}
+
+/* Link para voltar */
+.voltar-link {
+    margin-top: 20px;
+}
+
+.voltar-link a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.voltar-link a:hover {
+    text-decoration: underline;
+}
+
+.doacao-section {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.doacao-input-container {
+    /* exibe input e select na mesma linha */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* espaço horizontal entre input e select */
+    margin-bottom: 10px;
+}
+
+.doacao-section input {
+    /* se quiser ajustar largura, padding, etc., pode fazer aqui */
+}
+
+.doacao-section select {
+    /* estilos adicionais para o select */
+}
