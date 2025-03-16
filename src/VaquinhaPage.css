@@ -118,3 +118,50 @@ h1 {
 .doacao-section select {
     /* estilos adicionais para o select */
 }
+
+/* Pop-up (modal) */
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5); /* fundo escuro semi-transparente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* fica na frente de tudo */
+}
+
+.popup-box {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 80%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    animation: fadeInDown 0.3s ease; /* se quiser uma animação suave */
+}
+
+.popup-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Exemplo de animação suave (opcional) */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

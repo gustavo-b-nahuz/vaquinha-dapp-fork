@@ -8,28 +8,50 @@ const vaquinhaABI = VaquinhaArtifact.abi;
 
 export function VaquinhaPage() {
   const { address } = useParams();
+
+  // Estados de informações gerais
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [meta, setMeta] = useState("0");
   const [saldo, setSaldo] = useState("0");
   const [unidade, setUnidade] = useState("ether");
 
-  // Estado para valor da doação
+  // Estados para doação
   const [valorDoacao, setValorDoacao] = useState("0");
-
-  // Estado para unidade da doação (eth, gwei, wei)
   const [donationUnit, setDonationUnit] = useState("ether");
 
+  // Instância do contrato
   const [vaquinhaContract, setVaquinhaContract] = useState(null);
 
+  // -------------------------
+  //     Estados do popup
+  // -------------------------
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [startBlock, setStartBlock] = useState(null);
+
+  // Fecha pop-up ao clicar no "X"
+  const closePopup = () => {
+    setShowPopup(false);
+    setPopupMessage("");
+  };
+
+  // Carrega a vaquinha ao montar o componente
   useEffect(() => {
     if (!address) return;
+
     const loadVaquinha = async () => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      const currentBlock = await provider.getBlockNumber();
+      setStartBlock(currentBlock + 1);
+
       const signer = provider.getSigner();
       const contract = new ethers.Contract(address, vaquinhaABI, signer);
+
       setVaquinhaContract(contract);
 
+      // Carregar dados do contrato
       const titulo = await contract.titulo();
       const descricao = await contract.descricao();
       const meta = await contract.meta();
@@ -42,9 +64,58 @@ export function VaquinhaPage() {
       setSaldo(saldo);
       setUnidade(unidade);
     };
+
     loadVaquinha();
   }, [address]);
 
+  // Ouvir eventos quando o contrato está pronto
+  useEffect(() => {
+    if (!vaquinhaContract || startBlock === null) return;
+
+    // Handlers dos eventos
+    const handleDoacaoRecebida = (event) => {
+      // event.blockNumber estará dentro de event.blockNumber
+      if (event.blockNumber >= startBlock) {
+        setPopupMessage("Doação recebida com sucesso!");
+        setShowPopup(true);
+      }
+    };
+
+    const handleRetirada = (valor, unidadeRetirada, event) => {
+      // Valor vem do evento em wei; formatamos com a unidade do contrato
+      if (event.blockNumber >= startBlock) {
+        const valorFormatado = ethers.utils.formatUnits(valor, unidadeRetirada);
+        setPopupMessage(`Retirada realizada! Valor: ${valorFormatado} ${unidadeRetirada}`);
+        setShowPopup(true);
+      }
+    };
+
+    const handleMetaAtingida = (totalArrecadado, metaAlvo, event) => {
+      // Aqui podemos formatar para ETH (ou outra unidade fixa)
+      if (event.blockNumber >= startBlock) {
+        const arrecadadoFormatado = ethers.utils.formatEther(totalArrecadado);
+        const metaFormatada = ethers.utils.formatEther(metaAlvo);
+        setPopupMessage(
+            `Meta atingida! Arrecadado: ${arrecadadoFormatado} / Meta: ${metaFormatada} ETH`
+        );
+        setShowPopup(true);
+      }
+    };
+
+    // Ativar listeners
+    vaquinhaContract.on("DoacaoRecebida", handleDoacaoRecebida);
+    vaquinhaContract.on("Retirada", handleRetirada);
+    vaquinhaContract.on("MetaAtingida", handleMetaAtingida);
+
+    // Remover listeners quando sair do componente ou mudar de contrato
+    return () => {
+      vaquinhaContract.off("DoacaoRecebida", handleDoacaoRecebida);
+      vaquinhaContract.off("Retirada", handleRetirada);
+      vaquinhaContract.off("MetaAtingida", handleMetaAtingida);
+    };
+  }, [vaquinhaContract, startBlock]);
+
+  // Função de doação
   const doar = async () => {
     if (!valorDoacao || Number(valorDoacao) <= 0) {
       return alert("Digite um valor válido!");
@@ -64,21 +135,39 @@ export function VaquinhaPage() {
 
       const tx = await vaquinhaContract.doar({ value: donationValue });
       await tx.wait();
-      alert("Doação realizada com sucesso!");
-      // Recarrega a página para atualizar o saldo
-      window.location.reload();
+
+      // Atualiza saldo para exibir na tela
+      const provider = vaquinhaContract.provider;
+      const novoSaldo = await provider.getBalance(address);
+      setSaldo(novoSaldo);
+
     } catch (error) {
       console.error(error);
       alert("Erro ao doar.");
     }
   };
 
-  // Cálculo de progresso
-  const progresso = (parseFloat(ethers.utils.formatEther(saldo)) / parseFloat(ethers.utils.formatEther(meta))) * 100;
+  // Cálculo de progresso (sempre formatando ambos como Ether para ficar coerente)
+  const progresso =
+      (parseFloat(ethers.utils.formatEther(saldo)) /
+          parseFloat(ethers.utils.formatEther(meta))) *
+      100;
 
   return (
       <div className="vaquinha-page-container">
         <h1>Detalhes da Vaquinha</h1>
+
+        {/* Se showPopup for true, exibe o modal com a mensagem */}
+        {showPopup && (
+            <div className="popup-backdrop">
+              <div className="popup-box">
+            <span className="popup-close" onClick={closePopup}>
+              &times;
+            </span>
+                <p>{popupMessage}</p>
+              </div>
+            </div>
+        )}
 
         <div className="vaquinha-details">
           <h2>{titulo}</h2>
@@ -86,21 +175,25 @@ export function VaquinhaPage() {
 
           <div className="meta-container">
             <p>
-              <strong>Meta:</strong> {ethers.utils.formatUnits(meta, unidade)} {unidade}
+              <strong>Meta:</strong> {ethers.utils.formatUnits(meta, unidade)}{" "}
+              {unidade}
             </p>
             <p>
-              <strong>Saldo Atual:</strong> {ethers.utils.formatUnits(saldo, unidade)} {unidade}
+              <strong>Saldo Atual:</strong>{" "}
+              {ethers.utils.formatUnits(saldo, unidade)} {unidade}
             </p>
 
             <div className="progress-bar">
-              <div className="progress" style={{ width: `${progresso}%` }}></div>
+              <div
+                  className="progress"
+                  style={{ width: `${progresso}%` }}
+              ></div>
             </div>
             <p>{progresso.toFixed(2)}% alcançado</p>
           </div>
         </div>
 
         <div className="doacao-section">
-          {/* Container flex para input e select */}
           <div className="doacao-input-container">
             <input
                 type="number"
