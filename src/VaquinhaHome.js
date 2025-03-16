@@ -68,7 +68,8 @@ export function VaquinhaHome() {
                     const descricao = await vaquinhaContract.descricao();
                     const meta = await vaquinhaContract.meta();
                     const unidade = await vaquinhaContract.unidade();
-                    return { vaquinhaAddress, titulo, descricao, meta, unidade };
+                    const encerrada = await vaquinhaContract.encerrada();
+                    return { vaquinhaAddress, titulo, descricao, meta, unidade, encerrada };
                 })
             );
             setVaquinhas(vaquinhasInfo);
@@ -152,6 +153,7 @@ export function VaquinhaHome() {
                             onClick={() => handleCardClick(vaquinha.vaquinhaAddress)}
                         >
                             <h3>{vaquinha.titulo}</h3>
+                            {vaquinha.encerrada && <h4 style={{color:"red"}}>Encerrada</h4> }
                             <p>{vaquinha.descricao}</p>
                             <p>
                                 <strong>Meta:</strong>{" "}

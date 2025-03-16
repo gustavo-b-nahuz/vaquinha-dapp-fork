@@ -210,7 +210,7 @@ export function VaquinhaPage() {
 
   // Progresso (formatando meta e saldo como ether)
   const progresso =
-      (parseFloat(ethers.utils.formatEther(saldo)) /
+      (parseFloat(ethers.utils.formatEther(totalArrecadado)) /
           parseFloat(ethers.utils.formatEther(meta))) *
       100;
 
@@ -291,11 +291,15 @@ export function VaquinhaPage() {
 
         <div className="vaquinha-details">
           <h2>{titulo}</h2>
+          {encerrada && <h3 style={{color:"red"}}>Encerrada</h3>}
           <p className="descricao">{descricao}</p>
 
           <div className="meta-container">
             <p>
               <strong>Meta:</strong> {ethers.utils.formatUnits(meta, unidade)} {unidade}
+            </p>
+            <p>
+              <strong>Total Arrecadado:</strong> {ethers.utils.formatUnits(totalArrecadado, unidade)} {unidade}
             </p>
             <p>
               <strong>Saldo Atual:</strong> {ethers.utils.formatUnits(saldo, unidade)} {unidade}
