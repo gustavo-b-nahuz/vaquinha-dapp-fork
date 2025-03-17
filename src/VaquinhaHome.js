@@ -7,7 +7,7 @@ import VaquinhaArtifact from "./artifacts/contracts/Vaquinha.sol/Vaquinha.json";
 import "./VaquinhaHome.css";
 
 const factoryABI = VaquinhaFactoryArtifact.abi;
-const factoryAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const factoryAddress = "0x76915d8cD7c05f12C845DDb1a526DB33cBdf3840"; //"0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const vaquinhaABI = VaquinhaArtifact.abi;
 
 export function VaquinhaHome() {
