@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import ConnectWallet from "./ConnectWallet";
-import VaquinhaFactoryArtifact from "./artifacts/contracts/VaquinhaFactory.sol/VaquinhaFactory.json";
-import VaquinhaArtifact from "./artifacts/contracts/Vaquinha.sol/Vaquinha.json";
+import VaquinhaFactoryArtifact from "./artifacts/VaquinhaFactory.json";
+import VaquinhaArtifact from "./artifacts/Vaquinha.json";
 import "./VaquinhaHome.css";
 
 const factoryABI = VaquinhaFactoryArtifact.abi;
@@ -29,7 +29,11 @@ export function VaquinhaHome() {
             return;
         }
 
-        const contract = new ethers.Contract(factoryAddress, factoryABI, signer);
+        const contract = new ethers.Contract(
+            factoryAddress,
+            factoryABI,
+            signer
+        );
 
         try {
             // Converter a meta para wei conforme a unidade escolhida
@@ -43,7 +47,12 @@ export function VaquinhaHome() {
                 metaEmWei = ethers.utils.parseUnits(meta, "wei");
             }
 
-            const tx = await contract.criarVaquinha(titulo, descricao, metaEmWei, metaUnit);
+            const tx = await contract.criarVaquinha(
+                titulo,
+                descricao,
+                metaEmWei,
+                metaUnit
+            );
             await tx.wait();
             alert("Vaquinha criada com sucesso!");
             listarVaquinhas();
@@ -57,19 +66,34 @@ export function VaquinhaHome() {
     const listarVaquinhas = useCallback(async () => {
         if (!provider) return;
 
-        const contract = new ethers.Contract(factoryAddress, factoryABI, provider);
+        const contract = new ethers.Contract(
+            factoryAddress,
+            factoryABI,
+            provider
+        );
 
         try {
             const vaquinhasList = await contract.listarVaquinhas();
             const vaquinhasInfo = await Promise.all(
                 vaquinhasList.map(async (vaquinhaAddress) => {
-                    const vaquinhaContract = new ethers.Contract(vaquinhaAddress, vaquinhaABI, provider);
+                    const vaquinhaContract = new ethers.Contract(
+                        vaquinhaAddress,
+                        vaquinhaABI,
+                        provider
+                    );
                     const titulo = await vaquinhaContract.titulo();
                     const descricao = await vaquinhaContract.descricao();
                     const meta = await vaquinhaContract.meta();
                     const unidade = await vaquinhaContract.unidade();
                     const encerrada = await vaquinhaContract.encerrada();
-                    return { vaquinhaAddress, titulo, descricao, meta, unidade, encerrada };
+                    return {
+                        vaquinhaAddress,
+                        titulo,
+                        descricao,
+                        meta,
+                        unidade,
+                        encerrada,
+                    };
                 })
             );
             setVaquinhas(vaquinhasInfo);
@@ -150,14 +174,22 @@ export function VaquinhaHome() {
                         <div
                             key={index}
                             className="vaquinha-card"
-                            onClick={() => handleCardClick(vaquinha.vaquinhaAddress)}
+                            onClick={() =>
+                                handleCardClick(vaquinha.vaquinhaAddress)
+                            }
                         >
                             <h3>{vaquinha.titulo}</h3>
-                            {vaquinha.encerrada && <h4 style={{color:"red"}}>Encerrada</h4> }
+                            {vaquinha.encerrada && (
+                                <h4 style={{ color: "red" }}>Encerrada</h4>
+                            )}
                             <p>{vaquinha.descricao}</p>
                             <p>
                                 <strong>Meta:</strong>{" "}
-                                {ethers.utils.formatUnits(vaquinha.meta, vaquinha.unidade)} {vaquinha.unidade}
+                                {ethers.utils.formatUnits(
+                                    vaquinha.meta,
+                                    vaquinha.unidade
+                                )}{" "}
+                                {vaquinha.unidade}
                             </p>
                         </div>
                     ))}
